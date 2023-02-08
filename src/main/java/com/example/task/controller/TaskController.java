@@ -1,22 +1,22 @@
 package com.example.task.controller;
 
-import com.example.task.model.Project;
-import com.example.task.service.ProjectService;
-import org.springframework.beans.factory.annotation.Autowired;
+import com.example.task.model.TaskModel;
+import com.example.task.service.TaskService;
 import org.springframework.http.ResponseEntity;
+import org.springframework.stereotype.Controller;
 import org.springframework.web.bind.annotation.*;
+
 import java.util.Collections;
 import java.util.List;
 
+@Controller
+@RequestMapping("/task")
+public class TaskController {
 
-@RestController
-@RequestMapping("/project")
-public class ProjectController {
-    private final ProjectService projectService;
+    private final TaskService taskService;
 
-    @Autowired
-    public ProjectController(ProjectService projectService) {
-        this.projectService = projectService;
+    public TaskController(TaskService taskService) {
+        this.taskService = taskService;
     }
 
     /**
@@ -25,7 +25,7 @@ public class ProjectController {
     @GetMapping("/getAll")
     public ResponseEntity<?> getAll(){
         try {
-            List<Project> projects = projectService.getAll();
+            List<TaskModel> projects = taskService.getAll();
             return ResponseEntity.ok(projects);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Collections.singletonMap("Error", e.getMessage()));
@@ -36,9 +36,9 @@ public class ProjectController {
      * Save a project.
      */
     @PostMapping("/save")
-    public ResponseEntity<?> save(@RequestBody Project project) {
+    public ResponseEntity<?> save(@RequestBody TaskModel taskModel) {
         try {
-            return ResponseEntity.ok(projectService.save(project));
+            return ResponseEntity.ok(taskService.save(taskModel));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Collections.singletonMap("Error", e.getMessage()));
         }
@@ -50,7 +50,7 @@ public class ProjectController {
     @GetMapping("/get-by-id")
     public ResponseEntity<?> getById(@RequestParam Long id) {
         try {
-            return ResponseEntity.ok(projectService.getById(id));
+            return ResponseEntity.ok(taskService.getById(id));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Collections.singletonMap("Error", e.getMessage()));
         }
@@ -62,7 +62,7 @@ public class ProjectController {
     @DeleteMapping("/delete")
     public ResponseEntity<?> deleteById(@RequestParam Long id) {
         try {
-            projectService.deleteById(id);
+            taskService.deleteById(id);
             return ResponseEntity.ok(Collections.singletonMap("Message", "Project deleted successfully"));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Collections.singletonMap("Error", e.getMessage()));
