@@ -6,6 +6,7 @@ import com.example.task.repository.UserRepository;
 import com.example.task.service.JwtService;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
 import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
@@ -21,27 +22,49 @@ public class AuthenticationService {
 
 
     public AuthenticationResponse register(RegisterRequest request) {
-        User user = User.builder()
-                .name(request.getName())
-                .email(request.getEmail())
-                .password(passwordEncoder.encode(request.getPassword()))
-                .role(Role.USER)
-                .build();
-        userRepository.save(user);
 
-        String jwtToken = jwtService.generateToken(user);
-        return AuthenticationResponse.builder().token(jwtToken)
-                .build();
+        User user = new User();
+        user.setName(request.getName());
+        user.setEmail(request.getEmail());
+        user.setPassword(passwordEncoder.encode(request.getPassword()));
+        if (request.getRole().equals("ADMIN")) {
+            user.setRole(Role.ADMIN);
+        }
+        if (request.getRole().equals("MANAGER")) {
+            user.setRole(Role.MANAGER);
+        }
+        if (request.getRole().equals("USER")) {
+            user.setRole(Role.USER);
+        }
+        if (!userRepository.findByEmail(user.getEmail()).isPresent()) {
+            userRepository.save(user);
+            String jwtToken = jwtService.generateToken(user);
+            user.setPassword("Not Visible");
+            return new AuthenticationResponse(user, jwtToken, false);
+        }
+        return new AuthenticationResponse(true);
+
     }
 
-    public String authenticate(AuthenticateRequest request) {
-        authenticationManager.authenticate(
-                new UsernamePasswordAuthenticationToken(
-                        request.getEmail(),
-                        request.getPassword()
-                )
-        );
-        User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
-        return jwtService.generateToken(user);
+    public AuthenticationResponse authenticate(AuthenticateRequest request) {
+        if (userRepository.findByEmail(request.getEmail()).isPresent()) {
+           try{
+               authenticationManager.authenticate(
+                       new UsernamePasswordAuthenticationToken(
+                               request.getEmail(),
+                               request.getPassword()
+                       )
+               );
+           }catch (BadCredentialsException e ){
+               return new AuthenticationResponse(false);
+           }
+            User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
+            String token = jwtService.generateToken(user);
+            user.setPassword("Not Visible");
+            return AuthenticationResponse.builder().user(user)
+                    .token(token).isPresent(true)
+                    .build();
+        }
+        return new AuthenticationResponse(false);
     }
 }
