@@ -1,6 +1,6 @@
 package com.example.task.controller;
 
-import com.example.task.model.TaskModel;
+import com.example.task.model.Task;
 import com.example.task.service.TaskService;
 import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Controller;
@@ -11,6 +11,7 @@ import java.util.List;
 
 @Controller
 @RequestMapping("/task")
+@CrossOrigin(origins = "*")
 public class TaskController {
 
     private final TaskService taskService;
@@ -25,7 +26,7 @@ public class TaskController {
     @GetMapping("/getAll")
     public ResponseEntity<?> getAll(){
         try {
-            List<TaskModel> projects = taskService.getAll();
+            List<Task> projects = taskService.getAll();
             return ResponseEntity.ok(projects);
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Collections.singletonMap("Error", e.getMessage()));
@@ -36,9 +37,9 @@ public class TaskController {
      * Save a project.
      */
     @PostMapping("/save")
-    public ResponseEntity<?> save(@RequestBody TaskModel taskModel) {
+    public ResponseEntity<?> save(@RequestBody Task task) {
         try {
-            return ResponseEntity.ok(taskService.save(taskModel));
+            return ResponseEntity.ok(taskService.save(task));
         } catch (Exception e) {
             return ResponseEntity.badRequest().body(Collections.singletonMap("Error", e.getMessage()));
         }

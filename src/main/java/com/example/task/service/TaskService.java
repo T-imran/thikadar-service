@@ -1,6 +1,6 @@
 package com.example.task.service;
 
-import com.example.task.model.TaskModel;
+import com.example.task.model.Task;
 import com.example.task.repository.TaskRepository;
 import org.springframework.stereotype.Service;
 
@@ -18,21 +18,21 @@ public class TaskService {
     /**
      * Get All Tasks
      */
-    public List<TaskModel> getAll() {
+    public List<Task> getAll() {
         return taskRepository.findAll();
     }
 
     /**
      * Save task to db.
      */
-    public TaskModel save(TaskModel project) {
+    public Task save(Task project) {
         return taskRepository.save(project);
     }
 
     /**
      * Find a task by id.
      */
-    public TaskModel getById(Long id) {
+    public Task getById(Long id) {
         return taskRepository.findById(id).orElse(null);
     }
 
