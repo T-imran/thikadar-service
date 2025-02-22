@@ -1,10 +1,12 @@
 package com.example.task.auth;
 
+import com.example.task.exception.UserExceptions;
 import com.example.task.model.Role;
 import com.example.task.model.User;
 import com.example.task.repository.UserRepository;
 import com.example.task.service.JwtService;
 import lombok.RequiredArgsConstructor;
+import org.springframework.http.HttpStatus;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.BadCredentialsException;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -39,7 +41,7 @@ public class AuthenticationService {
         if (!userRepository.findByEmail(user.getEmail()).isPresent()) {
             userRepository.save(user);
             String jwtToken = jwtService.generateToken(user);
-            user.setPassword("Not Visible");
+            user.setPassword(null);
             return new AuthenticationResponse(user, jwtToken, false);
         }
         return new AuthenticationResponse(true);
@@ -56,7 +58,7 @@ public class AuthenticationService {
                        )
                );
            }catch (BadCredentialsException e ){
-               return new AuthenticationResponse(false);
+               throw new UserExceptions(HttpStatus.NOT_FOUND, "User id or Password is wrong");
            }
             User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
             String token = jwtService.generateToken(user);
@@ -64,7 +66,8 @@ public class AuthenticationService {
             return AuthenticationResponse.builder().user(user)
                     .token(token).isPresent(true)
                     .build();
+        }else{
+            throw new UserExceptions(HttpStatus.FORBIDDEN, "User id or Password is wrong");
         }
-        return new AuthenticationResponse(false);
     }
 }
