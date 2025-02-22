@@ -62,7 +62,7 @@ public class AuthenticationService {
            }
             User user = userRepository.findByEmail(request.getEmail()).orElseThrow();
             String token = jwtService.generateToken(user);
-            user.setPassword("Not Visible");
+            user.setPassword(null);
             return AuthenticationResponse.builder().user(user)
                     .token(token).isPresent(true)
                     .build();
